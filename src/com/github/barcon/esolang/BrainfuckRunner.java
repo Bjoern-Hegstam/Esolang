@@ -8,10 +8,10 @@ import java.util.*;
 /**
  * Created with IntelliJ IDEA.
  *
- * User: Bear
- * Date: 2013-05-22
- * Time: 17:10
- * To change this template use File | Settings | File Templates.
+ * @author Björn Hegstam
+ *         Date: 2013-05-22
+ *         Time: 17:10
+ *         To change this template use File | Settings | File Templates.
  */
 public class BrainfuckRunner extends EsolangRunner {
     public static final char LOOP_START = '[';
@@ -45,22 +45,11 @@ public class BrainfuckRunner extends EsolangRunner {
     }
 
     private void createCommands() {
-        commands = new HashMap<Character, Command>();
-        commands.put('>', data -> {
-            data.movePosition(1);
-        });
-
-        commands.put('<', data -> {
-            data.movePosition(-1);
-        });
-
-        commands.put('+', data -> {
-            data.write(data.read() + 1);
-        });
-
-        commands.put('-', data -> {
-            data.write(data.read() - 1);
-        });
+        commands = new HashMap<>();
+        commands.put('>', data -> data.movePosition(1));
+        commands.put('<', data -> data.movePosition(-1));
+        commands.put('+', data -> data.write(data.read() + 1));
+        commands.put('-', data -> data.write(data.read() - 1));
 
         commands.put(',', data -> {
             try {
@@ -82,7 +71,7 @@ public class BrainfuckRunner extends EsolangRunner {
 
     @Override
     public void run(String code) {
-        Stack<Integer> loops = new Stack<Integer>();
+        Stack<Integer> loops = new Stack<>();
 
         int code_idx = 0;
         while (code_idx >= 0 && code_idx < code.length()) {
@@ -115,7 +104,7 @@ public class BrainfuckRunner extends EsolangRunner {
     }
 
     private int findLoopEnd(int code_idx, String code) {
-        Stack<Integer> loops = new Stack<Integer>();
+        Stack<Integer> loops = new Stack<>();
         loops.push(code_idx);
 
         int end_idx = code_idx + 1;
