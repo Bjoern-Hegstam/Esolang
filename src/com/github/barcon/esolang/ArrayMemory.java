@@ -1,12 +1,9 @@
 package com.github.barcon.esolang;
 
 /**
- * Created with IntelliJ IDEA.
- *
  * @author Björn Hegstam
  * Date: 2013-05-22
  * Time: 19:48
- * To change this template use File | Settings | File Templates.
  */
 public class ArrayMemory {
     private int[] data;
@@ -17,8 +14,12 @@ public class ArrayMemory {
         position = 0;
     }
 
-    public void movePosition(int offset) {
-        position += offset;
+    public void incrementPointer() {
+        position++;
+    }
+
+    public void decrementPointer() {
+        position--;
     }
 
     public int read() {
@@ -27,5 +28,13 @@ public class ArrayMemory {
 
     public void write(int value) {
         data[position] = value;
+    }
+
+    public void increment() {
+        data[position]++;
+    }
+
+    public void decrement() {
+        data[position]--;
     }
 }

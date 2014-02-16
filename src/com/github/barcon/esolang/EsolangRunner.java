@@ -4,11 +4,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 /**
- * Created with IntelliJ IDEA.
  * @author Björn Hegstam
  * Date: 2013-05-22
  * Time: 16:51
- * To change this template use File | Settings | File Templates.
  */
 public abstract class EsolangRunner {
     private final InputStream in;
