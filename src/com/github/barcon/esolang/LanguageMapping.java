@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public abstract class LanguageMapping {
-    private final Map<TokenType, Character> tokens = new HashMap<>();
+    private final Map<Character, TokenType> tokens = new HashMap<>();
 
     protected LanguageMapping() {
         build();
@@ -12,20 +12,15 @@ public abstract class LanguageMapping {
 
     protected abstract void build();
 
-    public char getToken(TokenType type) {
-        return tokens.get(type);
-    }
-
     public TokenType getType(char token) {
-        return tokens.entrySet()
-                .stream()
-                .filter(e -> e.getValue().equals(token))
-                .findFirst()
-                .get()
-                .getKey();
+        return tokens.get(token);
     }
 
     protected void addToken(TokenType type, char token) {
-        tokens.put(type, token);
+        tokens.put(token, type);
+    }
+
+    public boolean containsToken(char token) {
+        return tokens.containsKey(token);
     }
 }
