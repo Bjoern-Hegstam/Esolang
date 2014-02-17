@@ -1,7 +1,6 @@
 package com.github.barcon.esolang;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public abstract class LanguageMapping {
     private final Map<Character, TokenType> tokens = new HashMap<>();
@@ -23,4 +22,5 @@ public abstract class LanguageMapping {
     public boolean containsToken(char token) {
         return tokens.containsKey(token);
     }
+
 }

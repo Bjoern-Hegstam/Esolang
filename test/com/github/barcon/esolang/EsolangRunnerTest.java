@@ -18,18 +18,32 @@ public class EsolangRunnerTest {
         final PrintStream ps = new PrintStream(baos);
 
 
-        runner = new EsolangRunner(new BrainfuckMapping(), null, ps);
+        runner = new EsolangRunner(new TestLanguageMapping(), null, ps);
     }
 
     @Test
-    public void test_addition() throws Exception {
-        // given
-        String code = "+++.";
+    public void addition() throws Exception {
+        testCode("+++r", 3);
+    }
 
-        // when
+    @Test
+    public void simpleLoop() throws Exception {
+        testCode("++[>++<-]>r", 4);
+    }
+
+    @Test
+    public void nestedLoops() throws Exception {
+        testCode("++[>++[>+++<-]<-]>>r", 12);
+    }
+
+    private void testCode(String code, int... expectedOutput) {
         runner.run(code);
 
-        // then
-        assertEquals(3, baos.toString().charAt(0));
+        final String output = baos.toString();
+
+        assertEquals(expectedOutput.length, output.length());
+        for (int i = 0; i < output.length(); i++) {
+            assertEquals(expectedOutput[i], output.charAt(i));
+        }
     }
 }

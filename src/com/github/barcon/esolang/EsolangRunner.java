@@ -4,6 +4,7 @@ import com.github.barcon.esolang.exceptions.UnbalancedLoopException;
 
 import java.io.*;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
@@ -13,14 +14,13 @@ import java.util.Stack;
  * Time: 16:51
  */
 public class EsolangRunner {
-    public static final char LOOP_START = '[';
-    public static final char LOOP_END = ']';
     public static final int DEFAULT_MEMORY_SIZE = 1000;
     private final LanguageMapping mapping;
     private final InputStream in;
     private final PrintStream out;
-    protected ArrayMemory memory;
+    private final ArrayMemory memory;
     private Map<TokenType, Command> commands;
+
 
     public EsolangRunner(LanguageMapping mapping, InputStream in, PrintStream out) {
         this.mapping = mapping;
@@ -46,73 +46,75 @@ public class EsolangRunner {
         commands.put(TokenType.INCREMENT, ArrayMemory::increment);
         commands.put(TokenType.DECREMENT, ArrayMemory::decrement);
 
-        commands.put(TokenType.WRITE, data -> {
+        commands.put(TokenType.WRITE, memory -> {
             try {
-                data.write(getIn().read());
+                memory.write(getIn().read());
             } catch (IOException e) {
                 e.printStackTrace();
             }
         });
 
-        commands.put(TokenType.READ, data -> {
-            getOut().write(data.read());
+        commands.put(TokenType.READ, memory -> {
+            getOut().write(memory.read());
             getOut().flush();
         });
     }
 
     public void run(String code) {
-        Stack<Integer> loops = new Stack<>();
+        final Tokenizer tokenizer = new Tokenizer(mapping);
+        final List<Token> tokens = tokenizer.tokenize(code);
 
-        int code_idx = 0;
-        while (code_idx >= 0 && code_idx < code.length()) {
-            char command_char = code.charAt(code_idx);
-            if (mapping.containsToken(command_char)) {
-                final TokenType type = mapping.getType(command_char);
-                commands.get(type).execute(memory);
-                code_idx++;
-            } else if (command_char == LOOP_START) {
+        Stack<Integer> loopStack = new Stack<>();
+
+        int tokenIndex = 0;
+        while (tokenIndex >= 0 && tokenIndex < tokens.size()) {
+            final Token token = tokens.get(tokenIndex);
+            if (commands.containsKey(token.getType())) {
+                final Command command = commands.get(token.getType());
+                command.execute(memory);
+                tokenIndex++;
+            } else if (token.getType() == TokenType.LOOP_START) {
                 if (memory.read() != 0) {
-                    loops.push(code_idx);
-                    code_idx++;
+                    loopStack.push(tokenIndex);
+                    tokenIndex++;
                 } else {
-                    code_idx = findLoopEnd(code_idx, code);
+                    tokenIndex = findLoopEnd(tokenIndex, tokens);
                 }
-            } else if (command_char == LOOP_END) {
+            } else if (token.getType() == TokenType.LOOP_END) {
                 if (memory.read() != 0) {
-                    if (loops.size() == 0) {
-                        throw new UnbalancedLoopException(code_idx);
+                    if (loopStack.size() == 0) {
+                        throw new UnbalancedLoopException(tokenIndex);
                     }
 
-                    code_idx = loops.pop();
+                    tokenIndex = loopStack.pop();
                 } else {
-                    loops.pop();
-                    code_idx++;
+                    loopStack.pop();
+                    tokenIndex++;
                 }
+            } else {
+                tokenIndex++;
             }
         }
     }
 
-    private int findLoopEnd(int code_idx, String code) {
-        Stack<Integer> loops = new Stack<>();
-        loops.push(code_idx);
+    private int findLoopEnd(int startIndex, List<Token> tokens) {
+        Stack<Integer> loopStack = new Stack<>();
+        loopStack.push(startIndex);
+        int index = startIndex + 1;
 
-        int end_idx = code_idx + 1;
-        do {
-            if (code.charAt(end_idx) == LOOP_END) {
-                loops.pop();
-            } else {
-                if (code.charAt(end_idx) == LOOP_START) {
-                    loops.push(end_idx);
-                }
-
-                end_idx++;
+        while (loopStack.size() > 0 && index < tokens.size()) {
+            if (tokens.get(index).getType() == TokenType.LOOP_END) {
+                loopStack.pop();
+            } else if (tokens.get(index).getType() == TokenType.LOOP_START) {
+                loopStack.push(index);
             }
-        } while (loops.size() > 0 && end_idx < code.length());
-
-        if (loops.size() > 0) {
-            throw new UnbalancedLoopException(code_idx);
+            index++;
         }
 
-        return end_idx;
+        if (loopStack.size() > 0) {
+            throw new UnbalancedLoopException(startIndex);
+        }
+
+        return index;
     }
 }
