@@ -22,10 +22,10 @@ public class TokenizerTest {
     @Test
     public void tokenize_emptyString() throws Exception {
         // when
-        final List<Token> tokenTypes = tokenizer.tokenize("");
+        final List<Token> tokens = tokenizer.tokenize("");
 
         // then
-        assertTrue(tokenTypes.isEmpty());
+        assertTrue(tokens.isEmpty());
     }
 
     @Test
@@ -34,14 +34,31 @@ public class TokenizerTest {
         final String code = "+-<>[]rw";
 
         // when
-        final List<Token> tokenTypes = tokenizer.tokenize(code);
+        final List<Token> tokens = tokenizer.tokenize(code);
 
         // then
-        final List<Token> expectedTypes = new LinkedList<>();
+        final List<Token> expectedTokens = new LinkedList<>();
         for (char c : code.toCharArray()) {
-            expectedTypes.add(new Token(c, mapping.getType(c)));
+            expectedTokens.add(new Token(c, mapping.getType(c)));
         }
 
-        assertEquals(expectedTypes, tokenTypes);
+        assertEquals(expectedTokens, tokens);
+    }
+
+    @Test
+    public void tokenize_ignoreNonTokenCharacters() throws Exception {
+        // given
+        final String code = "+\n-test+";
+
+        // when
+        final List<Token> tokens = tokenizer.tokenize(code);
+
+        // then
+        final List<Token> expectedTokens = new LinkedList<>();
+        expectedTokens.add(new Token('+', TokenType.INCREMENT));
+        expectedTokens.add(new Token('-', TokenType.DECREMENT));
+        expectedTokens.add(new Token('+', TokenType.INCREMENT));
+
+        assertEquals(expectedTokens, tokens);
     }
 }
