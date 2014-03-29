@@ -1,1 +1,1 @@
-An attempt at writing a generalized interpreter of Brainfuck-style languages. Could possibly be expanded in the future to e.g. handle String tokens rather only single character tokens.
+An attempt at writing a generalized interpreter of Brainfuck-style languages. Could possibly be expanded in the future to e.g. handle String tokens rather than only single character tokens.
