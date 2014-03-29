@@ -1,6 +1,6 @@
 package com.github.barcon.esolang;
 
-public class BrainFuckMapping extends LanguageMapping {
+public class BrainfuckMapping extends LanguageMapping {
     @Override
     protected void build() {
         addToken(TokenType.LOOP_START, '[');
