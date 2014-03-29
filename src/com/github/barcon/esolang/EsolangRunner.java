@@ -63,6 +63,7 @@ public class EsolangRunner {
     public void run(String code) {
         final Tokenizer tokenizer = new Tokenizer(mapping);
         final List<Token> tokens = tokenizer.tokenize(code);
+        final Map<Integer, Integer> loopIndex = buildLoopIndex(tokens);
 
         Stack<Integer> loopStack = new Stack<>();
 
@@ -78,7 +79,7 @@ public class EsolangRunner {
                     loopStack.push(tokenIndex);
                     tokenIndex++;
                 } else {
-                    tokenIndex = findLoopEnd(tokenIndex, tokens);
+                    tokenIndex = loopIndex.get(tokenIndex);
                 }
             } else if (token.getType() == TokenType.LOOP_END) {
                 if (memory.read() != 0) {
@@ -97,24 +98,33 @@ public class EsolangRunner {
         }
     }
 
-    private int findLoopEnd(int startIndex, List<Token> tokens) {
-        Stack<Integer> loopStack = new Stack<>();
-        loopStack.push(startIndex);
-        int index = startIndex + 1;
+    /**
+     * Scans the tokens once and creates a mapping from each loop's start index to the corresponding end index.
+     * @throws com.github.barcon.esolang.exceptions.UnbalancedLoopException
+     */
+    private Map<Integer, Integer> buildLoopIndex(List<Token> tokens) {
+        Map<Integer, Integer> loopIndex = new HashMap<>();
 
-        while (loopStack.size() > 0 && index < tokens.size()) {
-            if (tokens.get(index).getType() == TokenType.LOOP_END) {
-                loopStack.pop();
-            } else if (tokens.get(index).getType() == TokenType.LOOP_START) {
-                loopStack.push(index);
+        Stack<Integer> startIndices = new Stack<>();
+        for (int i = 0; i < tokens.size(); i++) {
+            switch (tokens.get(i).getType()) {
+                case LOOP_START:
+                    startIndices.push(i);
+                    break;
+                case LOOP_END:
+                    if (startIndices.isEmpty()) {
+                        throw new UnbalancedLoopException(i);
+                    }
+
+                    loopIndex.put(startIndices.pop(), i);
+                    break;
             }
-            index++;
         }
 
-        if (loopStack.size() > 0) {
-            throw new UnbalancedLoopException(startIndex);
+        if (startIndices.size() > 0) {
+            throw new UnbalancedLoopException(startIndices.pop());
         }
 
-        return index;
+        return loopIndex;
     }
 }
